@@ -1,0 +1,24 @@
+﻿TYPE "s7_1200_out_udt"
+VERSION : 0.1
+   STRUCT
+      PLC_DQ_0 : Bool;
+      PLC_DQ_1 : Bool;
+      PLC_DQ_2 : Bool;
+      PLC_DQ_3 : Bool;
+      PLC_DQ_4 : Bool;
+      SB_AQ_0 : Int;
+      TIMEFIELD : DTL;
+   END_STRUCT;
+
+END_TYPE
+
+DATA_BLOCK "s7_1200_output"
+{ S7_Optimized_Access := 'FALSE' }
+VERSION : 0.1
+NON_RETAIN
+"s7_1200_out_udt"
+
+BEGIN
+
+END_DATA_BLOCK
+

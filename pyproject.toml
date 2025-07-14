@@ -1,0 +1,65 @@
+[project]
+name = "s7datablock"
+version = "0.0.0"
+description = "A Python library interacting with Siemens S7 PLC datablocks"
+readme = "README.md"
+authors = [
+    { name = "Thijs Damsma", email = "thijs@damsma.net" }
+]
+license = {text = "MIT"}
+requires-python = ">=3.11"
+dependencies = [
+    "pyparsing",
+    "python-snap7",
+    "rich"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python",
+]
+
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+
+[tool.ruff]
+# Enable pycodestyle (`E`) and Pyflakes (`F`) codes by default.
+select = ["E", "F"]
+ignore = ["E501"]
+line-length = 120
+
+[tool.black]
+line-length = 120
+
+
+
+[project.urls]
+Homepage = "https://github.com/pyscaffold/pyscaffold/"
+Documentation = "https://pyscaffold.org/"
+
+[project.optional-dependencies]
+testing = [
+    "pytest",
+    "pytest-cov",
+    "ruff"
+]
+
+[tool.setuptools]
+zip-safe = false
+include-package-data = true
+packages = {find = {where = ["src"], exclude = ["tests"]}}
+
+[tool.pytest.ini_options]
+addopts = "--cov s7datablock --cov-report term-missing --verbose"
+testpaths = ["tests"]
+norecursedirs = ["dist", "build", ".tox"]
+
+[tool.flake8]
+max-line-length = 88
+extend-ignore = ["E203", "W503"]
+exclude = [".tox", "build", "dist", ".eggs", "docs/conf.py"]
+
+[tool.uv.workspace]
+members = ["s7datablock"]
