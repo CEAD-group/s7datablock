@@ -20,12 +20,12 @@ def resolve_data_types(types: dict[str, Any], prefix: list[str], d: Any) -> Iter
         yield prefix, d
 
 
-def parse_db_file(p: Path | StringIO, nesting_depth_to_skip=1) -> DBParseResult:
+def parse_db_file(p: Path | StringIO, prefix_levels_to_skip=1) -> DBParseResult:
     """Parse a DB file and return a S7Field mapping and total size.
 
     Args:
         p (Path): Path to the DB file
-        nesting_depth_to_skip (int, optional): How many levels in the nested data to skip when generating the fieldnames for nested fields.
+        prefix_levels_to_skip (int, optional): How many prefix levels to skip when generating fieldnames. Default=1 skips the UDT name.
 
     Returns:
         tuple[dict[str, S7Field], int]: The S7Field mapping and total size in bytes
@@ -37,8 +37,8 @@ def parse_db_file(p: Path | StringIO, nesting_depth_to_skip=1) -> DBParseResult:
     else:
         raise TypeError("Input must be a Path or StringIO")
 
-    if nesting_depth_to_skip < 0:
-        raise ValueError("nesting_depth_to_skip must be a non-negative integer")
+    if prefix_levels_to_skip < 0:
+        raise ValueError("prefix_levels_to_skip must be a non-negative integer")
     result = program.parseString(string, parse_all=True).as_dict()
     types = result["TYPES"]
     data = result["DATA_BLOCK"]
@@ -53,7 +53,7 @@ def parse_db_file(p: Path | StringIO, nesting_depth_to_skip=1) -> DBParseResult:
     current_bools: list[str] = []
     prev_base_name = ""
     for i in name_types:
-        name_parts = i.name[nesting_depth_to_skip:]
+        name_parts = i.name[prefix_levels_to_skip:]
         full_name = ".".join(name_parts)
         base_name = ".".join(name_parts[:-1])
         if current_bools and (base_name != prev_base_name or i.type != "Bool"):

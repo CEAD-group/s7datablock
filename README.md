@@ -23,7 +23,7 @@ Instead of manually mapping byte offsets and types, you can use `.db` definition
 - Clean terminal output using [Rich](https://github.com/Textualize/rich)
 - Easy integration into polling and monitoring loops
 
-![example.png](docs/example.png)
+![example.png](https://github.com/CEAD-group/s7datablock/raw/main/docs/example.png)
 
 ---
 
@@ -70,6 +70,7 @@ df_file_contents = StringIO(
 db = S7DataBlock.from_definition_file(df_file_contents, db_number=1200)
 print(db) # This will print the structure of the data block as a table
 
+print(repr(db))  # Print the raw representation of the data block
 # In a real application, you would create a snap7 client and connect to the PLC
 
 # client = snap7.client.Client()
@@ -81,10 +82,10 @@ with Live(db.to_table(), refresh_per_second=10) as live:
         # db.GET(client)
 
         # For demo, we'll just modify some values
-        db["my_udt.WHEN"] = datetime.now()
-        db["my_udt.PLC_DQ_0"] = not db["my_udt.PLC_DQ_0"]  # Toggle the boolean
-        db["my_udt.Value1"] = db["my_udt.Value1"] + 1  # Increment the integer value
-        db["my_udt.Value2"] = db["my_udt.Value2"] + 0.1  # Increment the real value
+        db["WHEN"] = datetime.now()
+        db["PLC_DQ_0"] = not db["PLC_DQ_0"]  # Toggle the boolean
+        db["Value1"] = db["Value1"] + 1  # Increment the integer value
+        db["Value2"] = db["Value2"] + 0.1  # Increment the real value
 
         # Update the display with current values
         live.update(db.to_table())
@@ -93,26 +94,24 @@ with Live(db.to_table(), refresh_per_second=10) as live:
 
 Running this code should render a live table in your terminal
 ```text
-
-                            Data Block Structure
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━┓
-┃ Name                       ┃ Data type   ┃   Offset ┃ Value               ┃
-┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━┩
-│ my_udt                     │ Struct      │          │                     │
-│   my_udt.PLC_DQ_0          │ Bool        │      0.0 │ False               │
-│   my_udt.PLC_DQ_1          │ Bool        │      0.1 │ False               │
-│   my_udt.WHEN              │ DTL         │      2.0 │ 2025-07-14 16:06:06 │
-│     my_udt.WHEN.YEAR       │ UInt        │      2.0 │ 2025                │
-│     my_udt.WHEN.MONTH      │ USInt       │      4.0 │ 7                   │
-│     my_udt.WHEN.DAY        │ USInt       │      5.0 │ 14                  │
-│     my_udt.WHEN.WEEKDAY    │ USInt       │      6.0 │ 1                   │
-│     my_udt.WHEN.HOUR       │ USInt       │      7.0 │ 16                  │
-│     my_udt.WHEN.MINUTE     │ USInt       │      8.0 │ 6                   │
-│     my_udt.WHEN.SECOND     │ USInt       │      9.0 │ 6                   │
-│     my_udt.WHEN.NANOSECOND │ UDInt       │     10.0 │ 195792000           │
-│   my_udt.Value1            │ Int         │     14.0 │ 44                  │
-│   my_udt.Value2            │ Real        │     16.0 │ 4.400               │
-└────────────────────────────┴─────────────┴──────────┴─────────────────────┘
+                        Data Block Structure
+┏━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━┓
+┃ Name              ┃ Data type   ┃   Offset ┃ Value               ┃
+┡━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━┩
+│ PLC_DQ_0          │ Bool        │      0.0 │ True                │
+│ PLC_DQ_1          │ Bool        │      0.1 │ False               │
+│ WHEN              │ DTL         │      2.0 │ 2025-07-14 17:08:40 │
+│   WHEN.YEAR       │ UInt        │      2.0 │ 2025                │
+│   WHEN.MONTH      │ USInt       │      4.0 │ 7                   │
+│   WHEN.DAY        │ USInt       │      5.0 │ 14                  │
+│   WHEN.WEEKDAY    │ USInt       │      6.0 │ 1                   │
+│   WHEN.HOUR       │ USInt       │      7.0 │ 17                  │
+│   WHEN.MINUTE     │ USInt       │      8.0 │ 8                   │
+│   WHEN.SECOND     │ USInt       │      9.0 │ 40                  │
+│   WHEN.NANOSECOND │ UDInt       │     10.0 │ 568441000           │
+│ Value1            │ Int         │     14.0 │ 757                 │
+│ Value2            │ Real        │     16.0 │ 75.699              │
+└───────────────────┴─────────────┴──────────┴─────────────────────┘
 ```
 
 

@@ -6,6 +6,7 @@ from rich.live import Live
 
 from s7datablock.mapping import S7DataBlock
 
+# Example in-line definition file contents. Alternatively, you can pass a PAth to a *.db file.
 df_file_contents = StringIO(
     """
         TYPE "my_udt"
@@ -26,9 +27,12 @@ df_file_contents = StringIO(
     """
 )
 
-db = S7DataBlock.from_definition_file(df_file_contents, db_number=1200, nesting_depth_to_skip=0)
+db = S7DataBlock.from_definition_file(df_file_contents, db_number=1200)
+print(db)  # This will print the structure of the data block as a table
 
+print(repr(db))  # Print the raw representation of the data block
 # In a real application, you would create a snap7 client and connect to the PLC
+
 # client = snap7.client.Client()
 # client.connect('192.168.0.1', 0, 1)
 
@@ -38,10 +42,10 @@ with Live(db.to_table(), refresh_per_second=10) as live:
         # db.GET(client)
 
         # For demo, we'll just modify some values
-        db["my_udt.WHEN"] = datetime.now()
-        db["my_udt.PLC_DQ_0"] = not db["my_udt.PLC_DQ_0"]  # Toggle the boolean
-        db["my_udt.Value1"] = db["my_udt.Value1"] + 1  # Increment the integer value
-        db["my_udt.Value2"] = db["my_udt.Value2"] + 0.1  # Increment the real value
+        db["WHEN"] = datetime.now()
+        db["PLC_DQ_0"] = not db["PLC_DQ_0"]  # Toggle the boolean
+        db["Value1"] = db["Value1"] + 1  # Increment the integer value
+        db["Value2"] = db["Value2"] + 0.1  # Increment the real value
 
         # Update the display with current values
         live.update(db.to_table())

@@ -172,17 +172,18 @@ class S7DataBlock(BufferMapping):
         self.db_size = db_size
 
     @classmethod
-    def from_definition_file(cls, path, db_number: int | None = None, nesting_depth_to_skip: int = 1) -> "S7DataBlock":
+    def from_definition_file(cls, path, db_number: int | None = None, prefix_levels_to_skip: int = 1) -> "S7DataBlock":
         """Create an S7DataBlock from a TIA Portal export file.
 
         Args:
             path: Path to the TIA Portal export file
             db_number: Optional DB number for PLC communication
+            prefix_levels_to_skip: How many prefix levels to skip when generating fieldnames. Default=1 skips the UDT name.
 
         Returns:
             S7DataBlock: The created datablock
         """
-        mapping, size = parse_db_file(path, nesting_depth_to_skip=nesting_depth_to_skip)
+        mapping, size = parse_db_file(path, prefix_levels_to_skip=prefix_levels_to_skip)
         return cls(buffer=bytearray(size), mapping=mapping, db_number=db_number, db_size=size)
 
     def GET(self, client: snap7.client.Client):
