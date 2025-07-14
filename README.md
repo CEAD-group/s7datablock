@@ -23,7 +23,7 @@ Instead of manually mapping byte offsets and types, you can use `.db` definition
 - Clean terminal output using [Rich](https://github.com/Textualize/rich)
 - Easy integration into polling and monitoring loops
 
-![example.png](docs/example.png)
+![example.png](https://github.com/CEAD-group/s7datablock/raw/main/docs/example.png)
 
 ---
 
