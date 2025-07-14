@@ -24,10 +24,6 @@ def main():
     buffered_vars["setpointHz2"] = 23.5
     print("Buffer after setting setpointHz2 (hex):", " ".join(f"{b:02X}" for b in buffered_vars.buffer))
 
-    # Display the full structure with values
-    print("\nFull structure:")
-    print(buffered_vars)
-
 
 if __name__ == "__main__":
     main()

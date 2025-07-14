@@ -1,112 +1,127 @@
 # S7DataBlock
 
 - [S7DataBlock](#s7datablock)
-  - [Introduction](#introduction)
+  - [Key Features](#key-features)
+  - [Data Transfer](#data-transfer)
+  - [Live Monitoring PLC Values](#live-monitoring-plc-values)
   - [Installation](#installation)
-    - [Parsing Data Blocks](#parsing-data-blocks)
   - [Contributing and Issues](#contributing-and-issues)
 
-## Introduction
+**A Python library for parsing Siemens S7 PLC data blocks, in conjunction with Snap7.**
 
-> A Python library for parsing Siemens S7 PLC data blocks, in conjunction with Snap7.
+`s7datablock` is a Python utility designed to parse and interpret Siemens S7 PLC data blocks using structured data definitions exported from the TIA Portal. It works seamlessly with the excellent [python-snap7](https://github.com/gijzelaerr/python-snap7) library to enable high-level, dictionary-like access to binary PLC data.
 
-`s7datablock` is a Python library designed to parse and interpret Siemens S7 PLC data blocks. It works in conjunction with the [python-snap7](https://github.com/gijzelaerr/python-snap7) library, providing a set of tools and utilities to read and write the bytes in a PLC datablock as structured data, using the DB definitions as exported from a TIA Portal project. This makes it easier for developers and engineers to work with Siemens S7 PLCs in their Python applications.
+Instead of manually mapping byte offsets and types, you can use `.db` definition files exported from TIA Portal to generate a clean, versionable Python representation of your data block structures.
 
-Instead of manually mapping bytes, the dataformat defined in Tia Portal can be used to generate the appropriate Python mapping. The configuration file can be kept separate from the code, making it easier to track versions and support complicated data structures.
+---
+
+## Key Features
+
+- Uses exported TIA Portal `*.db` files for accurate structure mapping
+- Read and write entire PLC data blocks with `.GET()` and `.SET()` (or the more pythonic `pull()` and `push()`)
+- Structure and sub-structure access via dot notation
+- Clean terminal output using [Rich](https://github.com/Textualize/rich)
+- Easy integration into polling and monitoring loops
+
+![example.png](docs/example.png)
+
+---
+
+## Data Transfer
+
+This library deliberately uses manual .GET() and .SET() calls instead of automatic syncing to prioritize:
+ - **Clarity** – Developers control exactly when data is transferred
+ - **Performance** – Avoid unnecessary communication overhead
+ - **Atomicity** – Batch multiple updates into one write
+
+## Live Monitoring PLC Values
+
+You can monitor PLC values by creating a polling loop. Here's an example using Rich for clean terminal output:
+
+```python
+from time import sleep
+from rich.live import Live
+from datetime import datetime
+from io import StringIO
+
+from s7datablock.mapping import S7DataBlock
+
+# Example in-line definition file contents. Alternatively, you can pass a PAth to a *.db file.
+df_file_contents = StringIO(
+    """
+        TYPE "my_udt"
+        VERSION : 0.1
+        STRUCT
+            PLC_DQ_0 : Bool;
+            PLC_DQ_1 : Bool;
+            WHEN : DTL;
+            Value1 : Int;
+            Value2 : Real;
+        END_STRUCT;
+        END_TYPE
+        DATA_BLOCK "my_udt"
+        VERSION : 0.1
+        "my_udt"
+        BEGIN
+        END_DATA_BLOCK
+    """
+)
+
+db = S7DataBlock.from_definition_file(df_file_contents, db_number=1200)
+print(db) # This will print the structure of the data block as a table
+
+# In a real application, you would create a snap7 client and connect to the PLC
+
+# client = snap7.client.Client()
+# client.connect('192.168.0.1', 0, 1)
+
+with Live(db.to_table(), refresh_per_second=10) as live:
+    while True:
+        # In a real application, you would call GET() here
+        # db.GET(client)
+
+        # For demo, we'll just modify some values
+        db["my_udt.WHEN"] = datetime.now()
+        db["my_udt.PLC_DQ_0"] = not db["my_udt.PLC_DQ_0"]  # Toggle the boolean
+        db["my_udt.Value1"] = db["my_udt.Value1"] + 1  # Increment the integer value
+        db["my_udt.Value2"] = db["my_udt.Value2"] + 0.1  # Increment the real value
+
+        # Update the display with current values
+        live.update(db.to_table())
+        sleep(0.2)
+```
+
+Running this code should render a live table in your terminal
+```text
+
+                            Data Block Structure
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━┓
+┃ Name                       ┃ Data type   ┃   Offset ┃ Value               ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━┩
+│ my_udt                     │ Struct      │          │                     │
+│   my_udt.PLC_DQ_0          │ Bool        │      0.0 │ False               │
+│   my_udt.PLC_DQ_1          │ Bool        │      0.1 │ False               │
+│   my_udt.WHEN              │ DTL         │      2.0 │ 2025-07-14 16:06:06 │
+│     my_udt.WHEN.YEAR       │ UInt        │      2.0 │ 2025                │
+│     my_udt.WHEN.MONTH      │ USInt       │      4.0 │ 7                   │
+│     my_udt.WHEN.DAY        │ USInt       │      5.0 │ 14                  │
+│     my_udt.WHEN.WEEKDAY    │ USInt       │      6.0 │ 1                   │
+│     my_udt.WHEN.HOUR       │ USInt       │      7.0 │ 16                  │
+│     my_udt.WHEN.MINUTE     │ USInt       │      8.0 │ 6                   │
+│     my_udt.WHEN.SECOND     │ USInt       │      9.0 │ 6                   │
+│     my_udt.WHEN.NANOSECOND │ UDInt       │     10.0 │ 195792000           │
+│   my_udt.Value1            │ Int         │     14.0 │ 44                  │
+│   my_udt.Value2            │ Real        │     16.0 │ 4.400               │
+└────────────────────────────┴─────────────┴──────────┴─────────────────────┘
+```
+
+
 
 ## Installation
 
 ```bash
 pip install s7datablock
 ```
-
-### Parsing Data Blocks
-
-In this example, we will demonstrate how to use the `s7datablock` library to parse and interpret Siemens S7 PLC data blocks.
-
-First, we define a s7_1200_out user-defined type (UDT) and a data block in Structured Control Language (SCL). The UDT, named "s7_1200_out_udt", consists of five boolean variables and one integer variable. The data block, named "s7_1200_out", uses this UDT. This file was defined in and exported from Tia Portal, using the `generate source from blocks, including all dependent blocks` option.
-
-```scl
-# s7_1200_out.db
-TYPE "s7_1200_out_udt"
-VERSION : 0.1
-   STRUCT
-      PLC_DQ_0 : Bool;  # Boolean variable
-      PLC_DQ_1 : Bool;  # Boolean variable
-      PLC_DQ_2 : Bool;  # Boolean variable
-      PLC_DQ_3 : Bool;  # Boolean variable
-      PLC_DQ_4 : Bool;  # Boolean variable
-      SB_AQ_0 : Int;    # Integer variable
-   END_STRUCT;
-END_TYPE
-
-DATA_BLOCK "s7_1200_out"
-{ S7_Optimized_Access := 'FALSE' }
-VERSION : 0.1
-NON_RETAIN
-"s7_1200_out_udt"
-
-BEGIN
-
-END_DATA_BLOCK
-```
-
-Next, we use the `S7DataBlock` class from the `s7datablock` library to parse the data block definition file. We then display the parsed data block and its initial buffer state. Finally, we modify one of the boolean variables in the data block and display the updated buffer state.
-
-```python
-# Import necessary modules
-from s7datablock.mapping import S7DataBlock
-from pathlib import Path
-
-# Parse the data block definition file
-db1200 = S7DataBlock.from_definition_file(
-    Path("tests/definitions/s7_1200_out.db"),
-    db_number=1200
-)
-
-# The printing the db1200 datasrutcure produces a nicely formatted output
-print(db1200)
-```
-
-```raw
-                   Data Block Structure
-┏━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━━━━┓
-┃ Name             ┃ Data type   ┃   Offset ┃ Value       ┃
-┡━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━━━━━┩
-│ PLC_DQ_0         │ Bool        │      0.0 │ False       │
-│ PLC_DQ_1         │ Bool        │      0.1 │ False       │
-│ PLC_DQ_2         │ Bool        │      0.2 │ False       │
-│ PLC_DQ_3         │ Bool        │      0.3 │ False       │
-│ PLC_DQ_4         │ Bool        │      0.4 │ False       │
-│ SB_AQ_0          │ Int         │      2.0 │ 0           │
-│ TIMEFIELD        │ DTL         │      4.0 │ None        │
-│   YEAR           │ UInt        │      4.0 │ 0           │
-│   MONTH          │ USInt       │      6.0 │ 0           │
-│   DAY            │ USInt       │      7.0 │ 0           │
-│   WEEKDAY        │ USInt       │      8.0 │ 0           │
-│   HOUR           │ USInt       │      9.0 │ 0           │
-│   MINUTE         │ USInt       │     10.0 │ 0           │
-│   SECOND         │ USInt       │     11.0 │ 0           │
-│   NANOSECOND     │ UDInt       │     12.0 │ 0           │
-└──────────────────┴─────────────┴──────────┴─────────────┘
-             Total size: 16 bytes
-```
-
-```python
-# db1200 maps the data like a dictionary but the hood it stores the data in a continuous buffer,
-# using the same format and byte ordering as the PLC
-# Initially the buffer is only zeros
-print(db1200.buffer)
-# Output: bytearray(b'\x00\x00\x00\x00')
-
-# Modify one of the boolean variables
-db1200["PLC_DQ_3"] = True
-
-# Now one bit has changed
-print(db1200.buffer)
-# Output: bytearray(b'\x08\x00\x00\x00')
-```
-
 
 
 ## Contributing and Issues

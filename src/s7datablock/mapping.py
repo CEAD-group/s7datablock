@@ -68,6 +68,21 @@ class BufferMapping(MutableMapping[str, ElementalType]):
         Returns a formatted string showing field names, data types, offsets, and current values
         with proper hierarchical indentation.
         """
+        total_size = self.total_size()
+        table = self.to_table()
+
+        console = Console(record=True, width=120)
+        with console.capture() as capture:
+            console.print()  # Empty line before table
+            for _ in range(17):
+                console.print(" ", end="")
+            console.print(table)
+            console.print(f"             Total size: {total_size} bytes")
+            console.print()  # Empty line after
+
+        return capture.get()
+
+    def to_table(self) -> Table:
         table = Table(
             show_edge=True,
             show_header=True,
@@ -112,22 +127,12 @@ class BufferMapping(MutableMapping[str, ElementalType]):
             table.add_row(*field.get_table_row(name=name, indent_level=indent_level, buffer=self.buffer))
             prev_sub = sub
 
-        # Calculate total size
-        total_size = max(
-            field.offset[0] + 2 if isinstance(field.offset, tuple) else field.offset + field.struct_width
-            for field in self.mapping.values()
-        )
+        return table
 
-        console = Console(record=True, width=120)
-        with console.capture() as capture:
-            console.print()  # Empty line before table
-            for _ in range(17):
-                console.print(" ", end="")
-            console.print(table)
-            console.print(f"             Total size: {total_size} bytes")
-            console.print()  # Empty line after
-
-        return capture.get()
+    def total_size(self) -> int:
+        """Calculate the total size of the buffer based on the maximum offset of all fields."""
+        total_size = max(field.offset + field.struct_width for field in self.mapping.values())
+        return total_size
 
     def keys(self):
         """Returns a view of the field names in the mapping."""

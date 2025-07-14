@@ -1,7 +1,7 @@
 [project]
 name = "s7datablock"
 version = "0.0.0"
-description = "A Python library interacting with Siemens S7 PLC datablocks"
+description = "A Python library for interacting with Siemens S7 PLC datablocks"
 readme = "README.md"
 authors = [
     { name = "Thijs Damsma", email = "thijs@damsma.net" }
@@ -36,8 +36,8 @@ line-length = 120
 
 
 [project.urls]
-Homepage = "https://github.com/pyscaffold/pyscaffold/"
-Documentation = "https://pyscaffold.org/"
+Homepage = "https://github.com/CEAD-group/s7datablock"
+Documentation = "https://github.com/CEAD-group/s7datablock"
 
 [project.optional-dependencies]
 testing = [
