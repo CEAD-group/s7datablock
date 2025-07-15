@@ -22,7 +22,7 @@ END_DATA_BLOCK
 """
 )
 
-db = S7DataBlock.from_definition_file(db_buff, db_number=1200, nesting_depth_to_skip=0)
+db = S7DataBlock.from_definition_file(db_buff, db_number=1200, prefix_levels_to_skip=0)
 
 # Set initial datetime value
 now = datetime(2025, 7, 9, 14, 30, 45, 123456)  # microseconds = 123456

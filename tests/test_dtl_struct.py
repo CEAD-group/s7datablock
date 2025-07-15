@@ -26,7 +26,7 @@ BEGIN
 END_DATA_BLOCK
 """
     )
-    return S7DataBlock.from_definition_file(db_buff, db_number=1200, nesting_depth_to_skip=0)
+    return S7DataBlock.from_definition_file(db_buff, db_number=1200, prefix_levels_to_skip=0)
 
 
 def test_db_structure(sample_dtl_db):

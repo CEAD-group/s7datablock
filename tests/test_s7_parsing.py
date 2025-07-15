@@ -129,9 +129,9 @@ def test_parse_db_from_stringio():
     assert "PLC_DQ_0" in result.mapping
 
 
-def test_parse_db_no_nesting_depth_to_skip():
-    """Test parsing with nesting_depth_to_skip=0 to keep full S7Field names."""
-    result = parse_db_file(Path("tests/definitions/s7_1200_out.db"), nesting_depth_to_skip=0)
+def test_parse_db_no_prefix_levels_to_skip():
+    """Test parsing with prefix_levels_to_skip=0 to keep full S7Field names."""
+    result = parse_db_file(Path("tests/definitions/s7_1200_out.db"), prefix_levels_to_skip=0)
 
     assert isinstance(result, DBParseResult)
     assert result.length == 16
@@ -154,9 +154,9 @@ def test_parse_db_no_nesting_depth_to_skip():
     }
 
 
-def test_parse_db_with_nesting_depth_to_skip():
-    """Test parsing with nesting_depth_to_skip=1 to skip top-level UDT name."""
-    result = parse_db_file(Path("tests/definitions/s7_1200_out.db"), nesting_depth_to_skip=1)
+def test_parse_db_with_prefix_levels_to_skip():
+    """Test parsing with prefix_levels_to_skip=1 to skip top-level UDT name."""
+    result = parse_db_file(Path("tests/definitions/s7_1200_out.db"), prefix_levels_to_skip=1)
 
     assert isinstance(result, DBParseResult)
     assert result.length == 16
@@ -182,8 +182,8 @@ def test_parse_db_with_nesting_depth_to_skip():
 def test_parse_db_invalid_input(sample_db_file):
     """Test that invalid inputs raise appropriate exceptions."""
     # Test invalid nesting depth
-    with pytest.raises(ValueError, match="nesting_depth_to_skip must be a non-negative integer"):
-        parse_db_file(sample_db_file, nesting_depth_to_skip=-1)
+    with pytest.raises(ValueError, match="prefix_levels_to_skip must be a non-negative integer"):
+        parse_db_file(sample_db_file, prefix_levels_to_skip=-1)
 
     # Test invalid input type
     with pytest.raises(TypeError, match="Input must be a Path or StringIO"):
