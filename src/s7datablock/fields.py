@@ -278,9 +278,9 @@ class S7DTL(
 
 
 class S7Time(S7Field[timedelta], s7_type="Time"):
-    """Time duration S7Field type."""
+    """Time duration S7Field type (signed 32-bit milliseconds)."""
 
-    struct_fmt = "I"
+    struct_fmt = ">i"
 
     def unpack(self, buffer: bytearray) -> timedelta:
         ms = struct.unpack(self.struct_fmt, buffer[self.buffer_slice])[0]
@@ -338,4 +338,4 @@ class DBParseResult(NamedTuple):
 class S7Int(S7Field[int], s7_type="Int"):
     """16-bit signed integer S7Field."""
 
-    struct_fmt = "h"
+    struct_fmt = ">h"
